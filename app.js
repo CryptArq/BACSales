@@ -1,9 +1,10 @@
 const axios = require("axios");
-const cache = require("./cache");
-const tweet = require("./tweet");
+const _ = require("lodash");
 const moment = require("moment");
 const { ethers } = require("ethers");
-const _ = require("lodash");
+const tweet = require("./tweet");
+const cache = require("./cache");
+
 var options = {
   method: "GET",
   url: "https://api.opensea.io/api/v1/events",
@@ -66,16 +67,16 @@ function formatAndSendTweet(event) {
   //return tweet.tweet(tweetText);
 }
 setInterval(() => {
-  console.log(process.env.X_API_KEY);
   const lastSaleTime =
     cache.get("lastSaleTime", null) ||
     moment().startOf("minute").subtract(59, "seconds").unix();
+  console.log("Last Sale: " + lastSaleTime);
   options.params.collection_slug = "boardapecollective";
+  options.params.occurred_after = lastSaleTime;
   axios
     .request(options)
     .then((response) => {
       const events = _.get(response, ["data", "asset_events"]);
-      console.log("response");
       const sortedEvents = _.sortBy(events, function (event) {
         const created = _.get(event, "created_date");
 
@@ -100,7 +101,6 @@ setInterval(() => {
     .request(options)
     .then((response) => {
       const events = _.get(response, ["data", "asset_events"]);
-      console.log("response");
       const sortedEvents = _.sortBy(events, function (event) {
         const created = _.get(event, "created_date");
 
