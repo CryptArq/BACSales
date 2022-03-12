@@ -68,6 +68,7 @@ function formatAndSendTweet(event) {
   //return tweet.tweet(tweetText);
 }
 setInterval(() => {
+  console.log(process.env.X_API_KEY);
   const lastSaleTime =
     cache.get("lastSaleTime", null) ||
     moment().startOf("minute").subtract(59, "seconds").unix();
