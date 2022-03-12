@@ -53,8 +53,6 @@ function formatAndSendTweet(event) {
       ethers.constants.EtherSymbol
     } ($${Number(formattedUsdPrice).toFixed(2)}) #BAC ${openseaLink}`;
 
-  console.log(tweetText);
-
   // OPTIONAL PREFERENCE - don't tweet out sales below X ETH (default is 1 ETH - change to what you prefer)
   // if (Number(formattedEthPrice) < 1) {
   //     console.log(`${assetName} sold below tweet price (${formattedEthPrice} ETH).`);
@@ -90,7 +88,7 @@ setInterval(() => {
         const created = _.get(event, "created_date");
 
         cache.set("lastSaleTime", moment(created).unix());
-        console.log(event);
+
         return formatAndSendTweet(event);
       });
     })
@@ -115,7 +113,7 @@ setInterval(() => {
         const created = _.get(event, "created_date");
 
         cache.set("lastSaleTime", moment(created).unix());
-        console.log(event);
+
         return formatAndSendTweet(event);
       });
     })
