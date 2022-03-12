@@ -70,8 +70,7 @@ function formatAndSendTweet(event) {
 setInterval(() => {
   const lastSaleTime =
     cache.get("lastSaleTime", null) ||
-    moment().startOf("minute").subtract(59, "seconds").unix() ||
-    0;
+    moment().startOf("minute").subtract(59, "seconds").unix();
   options.params.collection_slug = "boardapecollective";
   axios
     .request(options)
