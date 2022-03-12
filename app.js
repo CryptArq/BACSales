@@ -122,4 +122,4 @@ setInterval(() => {
     .catch((error) => {
       console.error(error);
     });
-}, 6000);
+}, 60000);
