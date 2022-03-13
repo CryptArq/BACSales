@@ -7,13 +7,6 @@ const twitterConfig = {
   access_token: process.env.ACCESS_TOKEN_KEY,
   access_token_secret: process.env.ACCESS_TOKEN_SECRET,
 };
-/*
-const twitterConfig = {
-  consumer_key: "3ObM0eIgh7QhdFvsLdwMg8iTR",
-  consumer_secret: "J8cIf5bw8YlqGVw8ciz6dJqto60GpmSOkdIA33hgmmUmGyAXAt",
-  access_token: "1493652856003391491-yhWXYLBTNat4cFawea9ZaTv3wIZzDb",
-  access_token_secret: "SxnWGJI1toImBqqKBWn5wItZPbqCLAbQhWUibSC4MhO1w",
-};*/
 
 const twitterClient = new twit(twitterConfig);
 
@@ -32,7 +25,6 @@ async function tweet(tweetText) {
   });
 }
 
-// OPTIONAL - use this method if you want the tweet to include the full image file of the OpenSea item in the tweet.
 async function tweetWithImage(tweetText, imageUrl) {
   // Format our image to base64
   const processedImage = await getBase64(imageUrl);
@@ -53,7 +45,6 @@ async function tweetWithImage(tweetText, imageUrl) {
           tweet,
           (error, tweet, response) => {
             if (!error) {
-              console.log(`Successfully tweeted: ${tweetText}`);
             } else {
               console.error(error);
             }

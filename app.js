@@ -4,8 +4,9 @@ const moment = require("moment");
 const { ethers } = require("ethers");
 const tweet = require("./tweet");
 const cache = require("./cache");
+const discord = require("./discord");
 
-var lastSaleTime = 0;
+var lastSaleTime = 4071127874;
 cache.set("lastSaleTime", lastSaleTime);
 var options = {
   method: "GET",
@@ -20,6 +21,7 @@ var options = {
     "X-API-KEY": process.env.X_API_KEY,
   },
 };
+discord.init();
 
 function formatAndSendTweet(event) {
   // Handle both individual items + bundle sales
@@ -44,34 +46,57 @@ function formatAndSendTweet(event) {
   const formattedEthPrice = formattedUnits * tokenEthPrice;
   const formattedUsdPrice = formattedUnits * tokenUsdPrice;
   var tweetText = "";
-  if (formattedEthPrice > 0.25) {
+  if (formattedEthPrice >= 0.25) {
     tweetText = "Holy cow, ";
+  } else if (formattedEthPrice >= 0.5) {
+    tweetText = "Oh man, oh geez, ";
   }
   tweetText =
     tweetText +
-    `${assetName} was just bought for ${formattedEthPrice}${
+    `${assetName} was just sold for ${formattedEthPrice}${
       ethers.constants.EtherSymbol
     } ($${Number(formattedUsdPrice).toFixed(2)}) #BAC ${openseaLink}`;
 
-  // OPTIONAL PREFERENCE - don't tweet out sales below X ETH (default is 1 ETH - change to what you prefer)
-  // if (Number(formattedEthPrice) < 1) {
-  //     console.log(`${assetName} sold below tweet price (${formattedEthPrice} ETH).`);
-  //     return;
-  // }
-
-  // OPTIONAL PREFERENCE - if you want the tweet to include an attached image instead of just text
   const imageUrl = _.get(event, ["asset", "image_url"]);
-  return; // tweet.tweetWithImage(tweetText, imageUrl);
-
-  //return tweet.tweet(tweetText);
+  //console.log("Would have tweeted:", tweetText);
+  return tweet.tweetWithImage(tweetText, imageUrl);
 }
+function sendSalesEmbed(event) {
+  const totalPrice = _.get(event, "total_price");
+
+  const tokenDecimals = _.get(event, ["payment_token", "decimals"]);
+  const tokenUsdPrice = _.get(event, ["payment_token", "usd_price"]);
+  const tokenEthPrice = _.get(event, ["payment_token", "eth_price"]);
+  const formattedUnits = ethers.utils.formatUnits(totalPrice, tokenDecimals);
+  const formattedEthPrice = formattedUnits * tokenEthPrice;
+  const formattedUsdPrice = formattedUnits * tokenUsdPrice;
+
+  const eventData = {
+    assetName: _.get(
+      event,
+      ["asset", "name"],
+      _.get(event, ["asset_bundle", "name"])
+    ),
+    assetLink: _.get(
+      event,
+      ["asset", "permalink"],
+      _.get(event, ["asset_bundle", "permalink"])
+    ),
+    assetPrice: formattedUnits,
+    assetPriceETH: formattedEthPrice,
+    assetPriceUSD: formattedUsdPrice,
+    imageURL: _.get(event, ["asset", "image_url"]),
+  };
+  return discord.postEmbed(eventData);
+}
+
 setInterval(() => {
   lastSaleTime =
     cache.get("lastSaleTime", null) ||
     moment().startOf("minute").subtract(59, "seconds").unix();
   console.log(`Last sale ID: ${cache.get("lastSaleTime", null)}`);
   options.params.collection_slug = "boardapecollective";
-  //options.params.occurred_after = lastSaleTime;
+
   axios
     .request(options)
     .then((response) => {
@@ -92,6 +117,7 @@ setInterval(() => {
         const created = _.get(event, "id");
 
         cache.set("lastSaleTime", created);
+        sendSalesEmbed(event);
         return formatAndSendTweet(event);
       });
     })
@@ -117,8 +143,8 @@ setInterval(() => {
 
       _.each(sortedEvents, (event) => {
         const created = _.get(event, "id");
-
         cache.set("lastSaleTime", created);
+        sendSalesEmbed(event);
         return formatAndSendTweet(event);
       });
     })
