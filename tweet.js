@@ -1,5 +1,6 @@
 const axios = require("axios");
 const twit = require("twit");
+const discord = require("./discord");
 
 const twitterConfig = {
   consumer_key: process.env.CONSUMER_KEY,
@@ -45,6 +46,7 @@ async function tweetWithImage(tweetText, imageUrl) {
           tweet,
           (error, tweet, response) => {
             if (!error) {
+              discord.post(`Successfully tweeted: ${tweetText}`);
             } else {
               console.error(error);
             }
