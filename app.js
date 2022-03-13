@@ -90,12 +90,9 @@ setInterval(() => {
 
       _.each(sortedEvents, (event) => {
         const created = _.get(event, "id");
-        if (created > lastSaleTime) {
-          const created = _.get(event, "id");
-          console.log(created);
-          cache.set("lastSaleTime", created);
-          return formatAndSendTweet(event);
-        }
+
+        cache.set("lastSaleTime", created);
+        return formatAndSendTweet(event);
       });
     })
     .catch((error) => {
@@ -120,12 +117,9 @@ setInterval(() => {
 
       _.each(sortedEvents, (event) => {
         const created = _.get(event, "id");
-        if (created > lastSaleTime) {
-          const created = _.get(event, "id");
-          console.log(created);
-          cache.set("lastSaleTime", created);
-          return formatAndSendTweet(event);
-        }
+
+        cache.set("lastSaleTime", created);
+        return formatAndSendTweet(event);
       });
     })
     .catch((error) => {
