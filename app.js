@@ -5,6 +5,8 @@ const { ethers } = require("ethers");
 const tweet = require("./tweet");
 const cache = require("./cache");
 
+var lastSaleTime = 0;
+cache.set("lastSaleTime", lastSaleTime);
 var options = {
   method: "GET",
   url: "https://api.opensea.io/api/v1/events",
@@ -19,9 +21,6 @@ var options = {
   },
 };
 
-console.log(
-  `Last sale (in seconds since Unix epoch): ${cache.get("lastSaleTime", null)}`
-);
 function formatAndSendTweet(event) {
   // Handle both individual items + bundle sales
   const assetName = _.get(
@@ -62,34 +61,44 @@ function formatAndSendTweet(event) {
 
   // OPTIONAL PREFERENCE - if you want the tweet to include an attached image instead of just text
   const imageUrl = _.get(event, ["asset", "image_url"]);
-  return tweet.tweetWithImage(tweetText, imageUrl);
+  return; // tweet.tweetWithImage(tweetText, imageUrl);
 
   //return tweet.tweet(tweetText);
 }
 setInterval(() => {
-  const lastSaleTime =
+  lastSaleTime =
     cache.get("lastSaleTime", null) ||
     moment().startOf("minute").subtract(59, "seconds").unix();
-  console.log("Last Sale: " + lastSaleTime);
+  console.log(
+    `Last sale (in seconds since Unix epoch): ${cache.get(
+      "lastSaleTime",
+      null
+    )}`
+  );
   options.params.collection_slug = "boardapecollective";
   //options.params.occurred_after = lastSaleTime;
   axios
     .request(options)
     .then((response) => {
       const events = _.get(response, ["data", "asset_events"]);
-      const sortedEvents = _.sortBy(events, function (event) {
-        const created = _.get(event, "created_date");
+      const filteredEvents = _.filter(events, function (ev) {
+        const filtered = _.get(ev, "id");
+        return filtered > lastSaleTime;
+      });
+      const sortedEvents = _.sortBy(filteredEvents, function (event) {
+        const created = _.get(event, "id");
 
-        return new Date(created);
+        return created;
       });
 
-      console.log(`${events.length} sales since the last one...`);
+      console.log(`${filteredEvents.length} sales since the last one...`);
 
       _.each(sortedEvents, (event) => {
-        const created = _.get(event, "created_date");
-
-        if (!lastSaleTime || created > lastSaleTime) {
-          cache.set("lastSaleTime", moment(created).unix());
+        const created = _.get(event, "id");
+        if (created > lastSaleTime) {
+          const created = _.get(event, "id");
+          console.log(created);
+          cache.set("lastSaleTime", created);
           return formatAndSendTweet(event);
         }
       });
@@ -102,19 +111,24 @@ setInterval(() => {
     .request(options)
     .then((response) => {
       const events = _.get(response, ["data", "asset_events"]);
-      const sortedEvents = _.sortBy(events, function (event) {
-        const created = _.get(event, "created_date");
+      const filteredEvents = _.filter(events, function (ev) {
+        const filtered = _.get(ev, "id");
+        return filtered > lastSaleTime;
+      });
+      const sortedEvents = _.sortBy(filteredEvents, function (event) {
+        const created = _.get(event, "id");
 
-        return new Date(created);
+        return created;
       });
 
-      console.log(`${events.length} sales since the last one...`);
+      console.log(`${filteredEvents.length} sales since the last one...`);
 
       _.each(sortedEvents, (event) => {
-        const created = _.get(event, "created_date");
-
-        if (!lastSaleTime || created > lastSaleTime) {
-          cache.set("lastSaleTime", moment(created).unix());
+        const created = _.get(event, "id");
+        if (created > lastSaleTime) {
+          const created = _.get(event, "id");
+          console.log(created);
+          cache.set("lastSaleTime", created);
           return formatAndSendTweet(event);
         }
       });
