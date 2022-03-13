@@ -69,12 +69,7 @@ setInterval(() => {
   lastSaleTime =
     cache.get("lastSaleTime", null) ||
     moment().startOf("minute").subtract(59, "seconds").unix();
-  console.log(
-    `Last sale (in seconds since Unix epoch): ${cache.get(
-      "lastSaleTime",
-      null
-    )}`
-  );
+  console.log(`Last sale ID: ${cache.get("lastSaleTime", null)}`);
   options.params.collection_slug = "boardapecollective";
   //options.params.occurred_after = lastSaleTime;
   axios
