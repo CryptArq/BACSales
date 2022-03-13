@@ -6,7 +6,7 @@ const tweet = require("./tweet");
 const cache = require("./cache");
 const discord = require("./discord");
 
-var lastSaleTime = 4071127874;
+var lastSaleTime = 4078158996; //Update after pushing new content to repo to avoid duplication of work
 cache.set("lastSaleTime", lastSaleTime);
 var options = {
   method: "GET",
@@ -35,13 +35,10 @@ function formatAndSendTweet(event) {
     ["asset", "permalink"],
     _.get(event, ["asset_bundle", "permalink"])
   );
-
   const totalPrice = _.get(event, "total_price");
-
   const tokenDecimals = _.get(event, ["payment_token", "decimals"]);
   const tokenUsdPrice = _.get(event, ["payment_token", "usd_price"]);
   const tokenEthPrice = _.get(event, ["payment_token", "eth_price"]);
-
   const formattedUnits = ethers.utils.formatUnits(totalPrice, tokenDecimals);
   const formattedEthPrice = formattedUnits * tokenEthPrice;
   const formattedUsdPrice = formattedUnits * tokenUsdPrice;
@@ -58,9 +55,11 @@ function formatAndSendTweet(event) {
     } ($${Number(formattedUsdPrice).toFixed(2)}) #BAC ${openseaLink}`;
 
   const imageUrl = _.get(event, ["asset", "image_url"]);
-  //console.log("Would have tweeted:", tweetText);
+  //console.log("Would have tweeted:", tweetText); --Use this when local testing to not send tweets 4000 times.
   return tweet.tweetWithImage(tweetText, imageUrl);
 }
+
+//Posts an embeded message in the #sales-bot channel.
 function sendSalesEmbed(event) {
   const totalPrice = _.get(event, "total_price");
 
@@ -96,7 +95,7 @@ setInterval(() => {
     moment().startOf("minute").subtract(59, "seconds").unix();
   console.log(`Last sale ID: ${cache.get("lastSaleTime", null)}`);
   options.params.collection_slug = "boardapecollective";
-
+  //Check the BAC Collection for sales
   axios
     .request(options)
     .then((response) => {
@@ -107,7 +106,6 @@ setInterval(() => {
       });
       const sortedEvents = _.sortBy(filteredEvents, function (event) {
         const created = _.get(event, "id");
-
         return created;
       });
 
@@ -115,7 +113,6 @@ setInterval(() => {
 
       _.each(sortedEvents, (event) => {
         const created = _.get(event, "id");
-
         cache.set("lastSaleTime", created);
         sendSalesEmbed(event);
         return formatAndSendTweet(event);
@@ -124,6 +121,7 @@ setInterval(() => {
     .catch((error) => {
       console.error(error);
     });
+  //Check the BAC Board of Directors too
   options.params.collection_slug = "bacboardofdirectors";
   axios
     .request(options)
@@ -140,7 +138,6 @@ setInterval(() => {
       });
 
       console.log(`${filteredEvents.length} sales since the last one...`);
-
       _.each(sortedEvents, (event) => {
         const created = _.get(event, "id");
         cache.set("lastSaleTime", created);

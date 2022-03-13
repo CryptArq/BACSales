@@ -18,13 +18,10 @@ function initializeBot() {
 }
 
 function postToChannel(text) {
-  client.login(botToken);
-  client.on("ready", () => {
-    const channel1 = client.channels.cache.find(
-      (channel) => channel.id === botDiagnostics
-    );
-    channel1.send(text);
-  });
+  const channel1 = client.channels.cache.find(
+    (channel) => channel.id === botDiagnostics
+  );
+  channel1.send(text);
 }
 
 async function postToChannelAsEmbed(eventPackage) {
