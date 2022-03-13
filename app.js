@@ -72,7 +72,7 @@ setInterval(() => {
     moment().startOf("minute").subtract(59, "seconds").unix();
   console.log("Last Sale: " + lastSaleTime);
   options.params.collection_slug = "boardapecollective";
-  options.params.occurred_after = lastSaleTime;
+  //options.params.occurred_after = lastSaleTime;
   axios
     .request(options)
     .then((response) => {
@@ -88,9 +88,10 @@ setInterval(() => {
       _.each(sortedEvents, (event) => {
         const created = _.get(event, "created_date");
 
-        cache.set("lastSaleTime", moment(created).unix());
-
-        return formatAndSendTweet(event);
+        if (created > lastSaleTime) {
+          cache.set("lastSaleTime", moment(created).unix());
+          return formatAndSendTweet(event);
+        }
       });
     })
     .catch((error) => {
@@ -112,9 +113,10 @@ setInterval(() => {
       _.each(sortedEvents, (event) => {
         const created = _.get(event, "created_date");
 
-        cache.set("lastSaleTime", moment(created).unix());
-
-        return formatAndSendTweet(event);
+        if (created > lastSaleTime) {
+          cache.set("lastSaleTime", moment(created).unix());
+          return formatAndSendTweet(event);
+        }
       });
     })
     .catch((error) => {
