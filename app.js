@@ -88,7 +88,7 @@ setInterval(() => {
       _.each(sortedEvents, (event) => {
         const created = _.get(event, "created_date");
 
-        if (created > lastSaleTime) {
+        if (!lastSaleTime || created > lastSaleTime) {
           cache.set("lastSaleTime", moment(created).unix());
           return formatAndSendTweet(event);
         }
@@ -113,7 +113,7 @@ setInterval(() => {
       _.each(sortedEvents, (event) => {
         const created = _.get(event, "created_date");
 
-        if (created > lastSaleTime) {
+        if (!lastSaleTime || created > lastSaleTime) {
           cache.set("lastSaleTime", moment(created).unix());
           return formatAndSendTweet(event);
         }
